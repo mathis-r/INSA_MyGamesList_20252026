@@ -61,4 +61,4 @@ data class Games(
 
 data class Genres(val id: Int, val name: String)
 data class PlatformsLogos(val id: Int, val url: String)
-data class Platforms(val id: Int, val name: String, val url: Int)
+data class Platforms(val id: Int, val name: String, val platform_logo: Int)
