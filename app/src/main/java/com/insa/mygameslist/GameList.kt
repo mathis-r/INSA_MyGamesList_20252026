@@ -1,6 +1,5 @@
 package com.insa.mygameslist
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,32 +9,28 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -43,64 +38,9 @@ import com.insa.mygameslist.data.Games
 import com.insa.mygameslist.data.IGDB
 
 class GameList {
-
-
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun SimpleSearchBar(
-        textFieldState: TextFieldState,
-        onSearch: (String) -> Unit,
-        searchResults: List<Games>,
-        modifier: Modifier = Modifier
-    ) {
-        // Controls expansion state of the search bar
-        var expanded by rememberSaveable { mutableStateOf(false) }
-
-        /*Box(
-            modifier
-                .fillMaxSize()
-                .semantics { isTraversalGroup = true }
-        ) {*/
-            SearchBar(
-                modifier = Modifier
-                    //.align(Alignment.TopCenter)
-                    .semantics { traversalIndex = 0f },
-                inputField = {
-                    SearchBarDefaults.InputField(
-                        query = textFieldState.text.toString(),
-                        onQueryChange = { textFieldState.edit { replace(0, length, it) } },
-                        onSearch = {
-                            onSearch(textFieldState.text.toString())
-                            expanded = false
-                        },
-                        expanded = expanded,
-                        onExpandedChange = { expanded = it },
-                        placeholder = { Text("Search") }
-                    )
-                },
-                expanded = false,
-                onExpandedChange = { expanded = false },
-            ) {/*
-                // Display search results in a scrollable column
-                Column(Modifier.verticalScroll(rememberScrollState())) {
-                    searchResults.forEach { result ->
-                        ListItem(
-                            headlineContent = { Text(result) },
-                            modifier = Modifier
-                                .clickable {
-                                    textFieldState.edit { replace(0, length, result) }
-                                    expanded = false
-                                }
-                                .fillMaxWidth()
-                        )
-                    }
-                }
-            */}
-        //}
-    }
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun Content(backStack: SnapshotStateList<Any>) {
+    fun Content(backStack: SnapshotStateList<Any>, favList: SnapshotStateList<Int>) {
         val textFieldState = rememberTextFieldState()
         val games = IGDB.games
 
@@ -111,12 +51,12 @@ class GameList {
                 if (searchText.isEmpty()) {
                     games
                 } else {
-                    games.filter {
-                        it.name.contains(
+                    games.filter { game ->
+                        game.name.contains(
                             searchText,
                             ignoreCase = true
                         ) || try {
-                            it.genres.contains(IGDB.genres.first {
+                            game.genres.contains(IGDB.genres.first {
                                 it.name.contains(
                                     searchText,
                                     ignoreCase = true
@@ -125,7 +65,7 @@ class GameList {
                         } catch (_: NoSuchElementException) {
                             false
                         } || try {
-                            it.platforms.contains(IGDB.platforms.first {
+                            game.platforms.contains(IGDB.platforms.first {
                                 it.name.contains(
                                     searchText,
                                     ignoreCase = true
@@ -136,41 +76,39 @@ class GameList {
                         }
                     }
                 }
-                //or it.genres.first{ IGDB.genres[it].name.contains(searchText, ignoreCase = true) }
             }
         }
+        val sb = SearchBar()
         Scaffold(
             topBar = {
                 TopAppBar(
-                    colors = topAppBarColors(
-                        containerColor = Color.LightGray,
-                        titleContentColor = Color.Black,
-                    ),
+                    colors = topAppBarColors(),
                     title = {
-                        SimpleSearchBar(textFieldState, onSearch = {}, filteredItems)
-                        //Text("My Games List")
+                        sb.SimpleSearchBar(textFieldState, onSearch = {})
                     }
                 )
             },
             contentWindowInsets = WindowInsets.systemBars,
-            //modifier = Modifier.fillMaxSize()
         ) { innerPadding ->
-            ListGame(innerPadding, backStack, filteredItems)
-            //InfoFromGame(innerPadding,IGDB.games.first().id)
+            ListGame(innerPadding, backStack, filteredItems, favList)
         }
     }
 
     @Composable
-    fun ListGame(innerPadding: PaddingValues, backStack: SnapshotStateList<Any>, listGame : List<Games>) {
+    fun ListGame(
+        innerPadding: PaddingValues,
+        backStack: SnapshotStateList<Any>,
+        listGame: List<Games>,
+        favList: SnapshotStateList<Int>
+    ) {
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxWidth(),
         ) {
-            //Text("À remplir", modifier = Modifier.padding(innerPadding))
-            for (game in listGame){
-                item{
-                    GameBox(game, innerPadding, backStack)
+            for (game in listGame) {
+                item {
+                    GameBox(game, backStack, favList)
                 }
             }
             if (listGame.isEmpty()) {
@@ -183,20 +121,14 @@ class GameList {
                     )
                 }
             }
-            /*
-            for (i in 0..<IGDB.games.size) {
-                item {
-                    GameBox(i, innerPadding, backStack)
-                }
-            }*/
         }
     }
 
     @Composable
-    fun GameBox(game: Games, innerPadding: PaddingValues, backStack: SnapshotStateList<Any>) {
+    fun GameBox(game: Games, backStack: SnapshotStateList<Any>, favList: SnapshotStateList<Int>) {
         val indices = game.genres
-
-        var genresStr: String = "Genres : "
+        val gameIndex = IGDB.games.indexOf(game)
+        var genresStr = "Genres : "
         for (i in 0..<indices.size) {
             try {
                 genresStr += IGDB.genres.first { it.id == indices[i] }.name
@@ -212,19 +144,51 @@ class GameList {
             modifier = Modifier
                 .padding(12.dp)
                 .clickable(onClick = {
-                    backStack.add(Game(IGDB.games.indexOf(game)))
-                }),
+                    backStack.add(Game(gameIndex))
+                })
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.Start,
         ) {
             AsyncImage(model = coverUrl, contentDescription = "Cover")
             Column(
                 modifier = Modifier
-                    .padding(12.dp),
+                    .padding(12.dp)
+                    .weight(1f),
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
-                Text(game.name)
-                Text(genresStr)
+                Text(
+                    game.name, style = TextStyle.Default.copy(
+                        lineBreak = LineBreak.Simple
+                    )
+                )
+                Text(
+                    genresStr, style = TextStyle.Default.copy(
+                        lineBreak = LineBreak.Simple
+                    )
+                )
+            }
+            IconButton(
+                onClick = {
+                    if (favList[gameIndex] == 0) {
+                        favList[gameIndex] = 1
+                    } else {
+                        favList[gameIndex] = 0
+                    }
+                },
+                modifier = Modifier.width(40.dp)
+            ) {
+                if (favList[gameIndex] == 0) {
+                    Icon(
+                        painter = painterResource(R.drawable.kid_star_24px),
+                        contentDescription = "Like"
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(R.drawable.outline_family_star_24),
+                        contentDescription = "Like"
+                    )
+                }
             }
         }
     }

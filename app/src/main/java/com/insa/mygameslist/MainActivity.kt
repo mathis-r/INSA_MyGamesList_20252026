@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.insa.mygameslist.data.IGDB
-import com.insa.mygameslist.ui.theme.GameInfo
 import com.insa.mygameslist.ui.theme.MyGamesListTheme
 
 
@@ -27,15 +25,12 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-
         IGDB.load(this)
 
         enableEdgeToEdge()
         setContent {
 
             MyGamesListTheme {
-                //gi.Content()
-                //gl.Content()
                 NavExample()
             }
         }
@@ -43,10 +38,14 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun NavExample() {
-        val gl: GameList = GameList();
-        val gi: GameInfo = GameInfo();
+        val gl = GameList()
+        val gi = GameInfo()
 
         val backStack = remember { mutableStateListOf<Any>(Home) }
+        val favlist = remember { mutableStateListOf<Int>() }
+        for (i in 0..<IGDB.games.size) {
+            favlist.add(0)
+        }
 
         NavDisplay(
             backStack = backStack,
@@ -54,12 +53,11 @@ class MainActivity : ComponentActivity() {
             entryProvider = { key ->
                 when (key) {
                     is Home -> NavEntry(key) {
-                        gl.Content(backStack)
-
+                        gl.Content(backStack, favlist)
                     }
 
                     is Game -> NavEntry(key) {
-                        gi.Content(backStack, key.nbGame)
+                        gi.Content(backStack, key.nbGame, favlist)
                     }
 
                     else -> NavEntry(Unit) { Text("Unknown route") }

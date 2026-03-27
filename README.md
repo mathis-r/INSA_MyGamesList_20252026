@@ -48,6 +48,6 @@ LinkedIn : https://fr.linkedin.com/in/j%C3%A9r%C3%B4me-decouenne-338a2767
 
 ## Point d'attention sur l'utilisation d'IA
 
-Tout ce projet est réalisable en un seul prompt (ça a été testé).  
+Tout ce projet est réalisable en un seul prompt (ça a été testé).
 Il n'y a aucun problème à ce que vous utilisiez une IA pour vous aider à saisir les concepts explorés durant ce module.  
 Le travail rendu, néanmoins, doit être le vôtre et non la génération d'une IA. Tout code rendu ayant été réalisé par IA occasionnera un malus pouvant aller jusqu'à porter la note à 0.
