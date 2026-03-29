@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
 
         val backStack = remember { mutableStateListOf<Any>(Home) }
         val favlist = remember { mutableStateListOf<Int>() }
-        for (i in 0..<IGDB.games.size) {
+        (0..<IGDB.games.size).forEach { _ ->
             favlist.add(0)
         }
 
